@@ -21,6 +21,10 @@ def extract(
     disable_progress_bar: bool = False,
 ):
     assert extractor
+    if not input_:
+        input_ = ""
+    if not output:
+        output = ""
 
     tag = f"feature_extractors_{extractor}"
     client = docker.from_env()
