@@ -17,7 +17,7 @@ Each extractor then in turn takes an [action] (e.g. extract-mfcc) [input] (typic
 An example:
 `feature_extractor audio extract-mfcc /path/to/my/file.wav /here/I/want/it/to/go.npy --n_mfcc 80`
 
-
+It is also possible to just build the extractors normally using docker and run them with `docker run`. The `feature_extractor` is simply doing that automatically.
 
 ### List of current Extractors
 * audio
