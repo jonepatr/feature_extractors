@@ -1,7 +1,7 @@
 # Feature Extractors
 
 ## Installation
-pip install -e .
+`pip install -e .`
 
 ### Dependencies
 * A running instance of docker
