@@ -11,7 +11,7 @@
 
 `feature_extractor [extractor]`
 
-Each extractor then in turn takes an [action] (e.g. extract-mfcc) [input] (typically a file), an [output] (a file or directory depending on the extractor) and furhter options. The system builds a docker image for each extractor type and assigns it a tag on the format `feature_extractors_{extractor}`, this might sometimes take a long while. This is only done the first time an etractor is used. 
+Each extractor then in turn takes an `[action]` (e.g. extract-mfcc) `[input]` (typically a file), an `[output]` (a file or directory depending on the extractor) and furhter options. The system builds a docker image for each extractor type and assigns it a tag on the format `feature_extractors_{extractor}`, this might sometimes take a long while. This is only done the first time an etractor is used. 
 
 
 An example:
