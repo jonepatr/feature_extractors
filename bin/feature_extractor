@@ -1,124 +1,34 @@
 #!/usr/bin/env python3
 
 import argparse
-import json
-import os
 import sys
-
-import docker
-
-client = docker.from_env()
+import logging
+from feature_extractors.api import extract
 
 
-if len(sys.argv) < 2:
-    print("Usage: feature_extractor [extractor]")
-    exit()
+parser = argparse.ArgumentParser()
+parser.add_argument("extractor")
+parser.add_argument("action", nargs="?")
+parser.add_argument("input", nargs="?")
+parser.add_argument("output", nargs="?")
+parser.add_argument("--gpus", default=None, help="Specify which gpus to use e.g. 1,2,3")
+parser.add_argument("--cpus", default=None, help="Specify which cpus to use e.g. 1,2,3")
+parser.add_argument("--verbose", action="store_true")
+
+args, rest_args = parser.parse_known_args()
+
+if args.verbose:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-extractor = sys.argv[1]
-
-gpu_options = {}
-cpu_options = {}
-del_argvs = []
-verbose = False
-for i, args in enumerate(sys.argv):
-    if args.startswith("--docker_gpu="):
-        gpus = args.split("=")[1]
-        gpu_options = {
-            "runtime": "nvidia",
-            "environment": {"CUDA_VISIBLE_DEVICES": gpus},
-        }
-        del_argvs.append(i)
-    elif args.startswith("--docker_cpu="):
-        cpus = args.split("=")[1]
-        cpu_options = {"cpuset_cpus": cpus}
-        del_argvs.append(i)
-    elif args.startswith("--docker_verbose"):
-        verbose = True
-        del_argvs.append(i)
-
-for idx in sorted(del_argvs, reverse=True):
-    del sys.argv[idx]
-
-if len(sys.argv) < 5:
-    sys.argv += [""] * (5 - len(sys.argv))
-
-fn = sys.argv[2]
-input_ = sys.argv[3]
-output = sys.argv[4]
-rest_args = " ".join(sys.argv[5:])
-
-tag = f"feature_extractors_{extractor}"
-
-try:
-    client.images.get(tag)
-except docker.errors.ImageNotFound:
-    print("building image..")
-    if verbose:
-        print(
-            os.path.abspath(
-                os.path.join(
-                    os.path.dirname(__file__), os.pardir, "extractors", extractor
-                )
-            )
-        )
-    try:
-        for lines in client.api.build(
-            path=os.path.join(
-                os.path.dirname(__file__), os.pardir, "extractors", extractor
-            ),
-            tag=tag,
-        ):
-            split_lines = lines.decode('utf-8').split('\r\n')
-            for line in split_lines:
-                if line:
-                    json_line = json.loads(line)
-                    if 'stream' in json_line:
-                        print(json_line['stream'].strip())
-                    elif 'error' in json_line:
-                        print(json_line)
-                        exit()
-    except docker.errors.BuildError as e:
-        build_log = e.build_log
-        print("".join([x["stream"] for x in build_log if "stream" in x]))
-        exit()
-    print("done building image")
-
-volumes = {}
-input_arg = ""
-output_arg = ""
-
-if output:
-    volumes[os.path.dirname(os.path.abspath(output))] = {
-        "bind": "/output",
-        "mode": "rw",
-    }
-    output_arg = os.path.join("/output", os.path.basename(output))
-
-if input_:
-    if os.path.exists(input_):
-        volumes[os.path.dirname(os.path.abspath(input_))] = {
-            "bind": "/input",
-            "mode": "ro",
-        }
-        input_arg = os.path.join("/input", os.path.basename(input_))
-    else:
-        input_arg = input_
-
-command = f"python extract.py {fn} {input_arg} {output_arg} {rest_args}"
-
-try:
-    out = client.containers.run(
-        tag,
-        command=command,
-        # auto_remove=True,
-        **gpu_options,
-        **cpu_options,
-        volumes=volumes,
-    )
-    print(out.decode("utf-8"))
-except docker.errors.ContainerError as e:
-    if verbose:
-        print("image used:", e.image)
-        print("command used:", e.command)
-    print(e.container.logs().decode("utf-8"))
+extract(
+    extractor=args.extractor,
+    action=args.action,
+    input_=args.input,
+    output=args.output,
+    rest_args=" ".join(rest_args),
+    gpus=args.gpus,
+    cpus=args.cpus,
+)

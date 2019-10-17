@@ -9,5 +9,6 @@ setup(
     author='Patrik Jonell',
     author_email='pjjonell@kth.se',
     install_requires=['docker'],
+    packages=['feature_extractors'],
     scripts=['bin/feature_extractor']
 )
