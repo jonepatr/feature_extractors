@@ -54,7 +54,11 @@ except docker.errors.ImageNotFound:
     print("building image..")
     if verbose:
         print(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "extractors", extractor)))
-    client.images.build(path=os.path.join(os.path.dirname(__file__), os.pardir, "extractors", extractor), tag=tag)
+    try:
+        client.images.build(path=os.path.join(os.path.dirname(__file__), os.pardir, "extractors", extractor), tag=tag)
+    except docker.errors.BuildError as e:
+        build_log = e.build_log
+        print("".join([x['stream'] for x in build_log if 'stream' in x]))
     print("done building image")
 
 volumes = {}
