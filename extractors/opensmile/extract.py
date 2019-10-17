@@ -6,7 +6,12 @@ import tempfile
 import click
 
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("output_file")
 @click.argument("config")
@@ -24,4 +29,4 @@ def extract_opensmile(input_file, output_file, config, opensmile_bin):
 
 
 if __name__ == "__main__":
-    extract_opensmile()
+    cli()

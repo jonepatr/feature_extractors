@@ -7,7 +7,12 @@ import click
 import cv2
 
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("output_dir")
 @click.option("--file_extension", default="jpg")
@@ -32,4 +37,4 @@ def extract_images(input_file, output_dir, file_extension):
 
 
 if __name__ == "__main__":
-    extract_images()
+    cli()

@@ -7,7 +7,12 @@ from pathlib import Path
 import click
 
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("output_dir")
 @click.option("--openpose_args", default="-face")
@@ -43,4 +48,4 @@ def extract_openpose(input_file, output_dir, openpose_args, openpose_bin):
 
 
 if __name__ == "__main__":
-    extract_openpose()
+    cli()

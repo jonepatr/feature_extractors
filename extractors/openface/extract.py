@@ -7,7 +7,12 @@ from pathlib import Path
 import click
 
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("output_dir")
 @click.option(
@@ -38,4 +43,4 @@ def extract_openface(input_file, output_dir, openface_args, openface_bin):
 
 
 if __name__ == "__main__":
-    extract_openface()
+    cli()
