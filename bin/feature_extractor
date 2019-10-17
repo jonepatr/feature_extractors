@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-import docker
+import argparse
+import json
 import os
 import sys
-import argparse
+
+import docker
 
 client = docker.from_env()
 
@@ -53,12 +55,33 @@ try:
 except docker.errors.ImageNotFound:
     print("building image..")
     if verbose:
-        print(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "extractors", extractor)))
+        print(
+            os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__), os.pardir, "extractors", extractor
+                )
+            )
+        )
     try:
-        client.images.build(path=os.path.join(os.path.dirname(__file__), os.pardir, "extractors", extractor), tag=tag)
+        for lines in client.api.build(
+            path=os.path.join(
+                os.path.dirname(__file__), os.pardir, "extractors", extractor
+            ),
+            tag=tag,
+        ):
+            split_lines = lines.decode('utf-8').split('\r\n')
+            for line in split_lines:
+                if line:
+                    json_line = json.loads(line)
+                    if 'stream' in json_line:
+                        print(json_line['stream'].strip())
+                    elif 'error' in json_line:
+                        print(json_line)
+                        exit()
     except docker.errors.BuildError as e:
         build_log = e.build_log
-        print("".join([x['stream'] for x in build_log if 'stream' in x]))
+        print("".join([x["stream"] for x in build_log if "stream" in x]))
+        exit()
     print("done building image")
 
 volumes = {}
@@ -66,13 +89,19 @@ input_arg = ""
 output_arg = ""
 
 if output:
-    volumes[os.path.dirname(os.path.abspath(output))] = {"bind": "/output", "mode": "rw"}
-    output_arg = os.path.join('/output', os.path.basename(output))
+    volumes[os.path.dirname(os.path.abspath(output))] = {
+        "bind": "/output",
+        "mode": "rw",
+    }
+    output_arg = os.path.join("/output", os.path.basename(output))
 
 if input_:
     if os.path.exists(input_):
-        volumes[os.path.dirname(os.path.abspath(input_))] = {"bind": "/input", "mode": "ro"}
-        input_arg = os.path.join('/input', os.path.basename(input_))
+        volumes[os.path.dirname(os.path.abspath(input_))] = {
+            "bind": "/input",
+            "mode": "ro",
+        }
+        input_arg = os.path.join("/input", os.path.basename(input_))
     else:
         input_arg = input_
 
@@ -85,11 +114,11 @@ try:
         # auto_remove=True,
         **gpu_options,
         **cpu_options,
-        volumes=volumes
+        volumes=volumes,
     )
-    print(out.decode('utf-8'))
+    print(out.decode("utf-8"))
 except docker.errors.ContainerError as e:
     if verbose:
-        print('image used:', e.image)
-        print('command used:', e.command)
-    print(e.container.logs().decode('utf-8'))
+        print("image used:", e.image)
+        print("command used:", e.command)
+    print(e.container.logs().decode("utf-8"))
