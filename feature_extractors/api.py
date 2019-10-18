@@ -12,20 +12,24 @@ logger = logging.getLogger(__name__)
 
 def extract(
     extractor: str = None,
-    action: str = None,
-    input_: str = None,
-    output: str = None,
-    rest_args: str = None,
+    rest_args: list = None,
+    volumes: dict = None,
     gpus: str = None,
     cpus: str = None,
     disable_progress_bar: bool = False,
 ):
     assert extractor
-    if not input_:
-        input_ = ""
-    if not output:
-        output = ""
 
+    logger.debug(
+        f"""
+        extractor: {extractor}
+        rest_args: {rest_args}
+        volumes: {volumes}
+        gpus: {gpus}
+        cpus: {cpus}
+        disable_progress_bar: {disable_progress_bar}
+        """
+    )
     tag = f"feature_extractors_{extractor}"
     client = docker.from_env()
     try:
@@ -33,11 +37,22 @@ def extract(
     except docker.errors.ImageNotFound:
         _build_image(extractor, tag, disable_progress_bar)
 
+    args = " ".join(rest_args)
+
+    command = f"python extract.py {args}"
+    logger.debug("command: %s", command)
+
+    
+    final_volumes = {}
+    if volumes:
+        for host_path, machine_path in volumes.items():
+            final_volumes[host_path] = {"bind": machine_path, "mode": "rw"}
+
     try:
         out = client.containers.run(
             tag,
-            command=_build_command(action, input_, output, rest_args),
-            volumes=_prepare_volumes(input_, output),
+            command=command,
+            volumes=final_volumes,
             **_prepare_cpu_and_gpu_options(cpus, gpus),
             remove=True,
             stream=True,
@@ -49,61 +64,6 @@ def extract(
         logger.debug("image used: %s", e.image)
         logger.debug("command used: %s", e.command)
         print(e.stderr.decode("utf-8"))
-
-
-def _prepare_volumes(input_, output):
-    volumes = {}
-    input_path = None
-    output_path = os.path.dirname(os.path.abspath(output))
-
-    if input_ and os.path.exists(input_):
-        input_path = os.path.dirname(os.path.abspath(input_))
-        if input_path == output_path:
-            mode = "rw"
-        else:
-            mode = "ro"
-        volumes[input_path] = {
-            "bind": "/input",
-            "mode": mode,
-        }
-
-    if output and input_path != output_path:
-        volumes[output_path] = {
-            "bind": "/output",
-            "mode": "rw",
-        }
-    return volumes
-
-
-def _build_command(action, input_, output, rest_args):
-    input_arg = ""
-    output_arg = ""
-    input_path = None
-    output_path = os.path.dirname(os.path.abspath(output))
-
-    if not action:
-        action = ""
-
-    if input_:
-        if os.path.exists(input_):
-            input_path = os.path.dirname(os.path.abspath(input_))
-            input_arg = os.path.join("/input", os.path.basename(input_))
-        else:
-            input_arg = input_
-
-    if output:
-        if input_path == output_path:
-            path = "/input"
-        else:
-            path = "/output"
-        output_arg = os.path.join(path, os.path.basename(output))
-
-    if not rest_args:
-        rest_args = ""
-
-    command = f"python extract.py {action} {input_arg} {output_arg} {rest_args}"
-    logger.debug("command: %s", command)
-    return command
 
 
 def _prepare_cpu_and_gpu_options(cpus, gpus):

@@ -59,8 +59,8 @@ def create_config(img_size, flame_model_path, model_path):
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_file")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--model_path", default="/model/ring_6_68641")
 @click.option("--flame_model_path", default="/flame_model/ch_models/generic_model.pkl")
 @click.option("--img_size", default=224)
@@ -77,8 +77,8 @@ def extract_from_image(input_file, output_file, model_path, flame_model_path, im
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_dir")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_dir", required=True, help="Output directory")
 @click.option("--model_path", default="/model/ring_6_68641")
 @click.option("--flame_model_path", default="/flame_model/ch_models/generic_model.pkl")
 @click.option("--img_size", default=224)

@@ -12,8 +12,8 @@ def cli():
 
 
 @cli.command()
-@click.argument("input_dir", type=click.Path(exists=True))
-@click.argument("output_file")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--cnn_weights_path", default="models/mmod_human_face_detector.dat")
 @click.option(
     "--shape_predictor_path", default="models/shape_predictor_68_face_landmarks.dat"

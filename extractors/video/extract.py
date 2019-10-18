@@ -13,8 +13,8 @@ def cli():
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_dir")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_dir", required=True, help="Output directory")
 @click.option("--file_extension", default="jpg")
 def extract_images(input_file, output_dir, file_extension):
     cap = cv2.VideoCapture(input_file)

@@ -12,9 +12,9 @@ def cli():
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_file")
-@click.argument("config")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
+@click.option("--config", "config", help="Config file")
 @click.option("--opensmile_bin", default="SMILExtract")
 def extract_opensmile(input_file, output_file, config, opensmile_bin):
     extension = os.path.splitext(output_file)[1]

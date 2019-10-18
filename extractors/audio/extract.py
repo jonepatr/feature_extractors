@@ -12,8 +12,8 @@ def cli():
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_file")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--n_frames")
 @click.option("--n_ac_coefficients", default=32)
 @click.option("--sampling_rate", default=16000)
@@ -55,8 +55,8 @@ def extract_autocorrelation(
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_file")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--sampling_rate")
 @click.option("--n_fft", required=True, type=int)
 @click.option("--n_mels", default=64)
@@ -85,8 +85,8 @@ def extract_spectrogram(
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_file")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--n_mfcc")
 def extract_mfcc(input_file, output_file, n_mfcc):
     melspectrogram = np.load(input_file)

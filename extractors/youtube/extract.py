@@ -19,8 +19,8 @@ def cli():
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_file")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--fps", default=30)
 @click.option("--ffmpeg_bin", default="ffmpeg")
 @click.option("--ffprobe_bin", default="ffprobe")
@@ -66,8 +66,8 @@ def process_youtube_video(input_file, output_file, fps, ffmpeg_bin, ffprobe_bin)
 
 
 @cli.command()
-@click.argument("yt_video_id")
-@click.argument("output_file")
+@click.option("-i", "yt_video_id", required=True, help="Youtube video ID")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--caption_type", default="asr")
 def download_youtube_captions(yt_video_id, output_file, caption_type):
     yt = YouTube("https://youtu.be/" + yt_video_id)
@@ -91,8 +91,8 @@ def download_youtube_captions(yt_video_id, output_file, caption_type):
 
 
 @cli.command()
-@click.argument("yt_video_id")
-@click.argument("output_file")
+@click.option("-i", "yt_video_id", required=True, help="Youtube video ID")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--file_type", type=click.Choice(["audio", "video"]), required=True)
 def youtube_downloader(yt_video_id, output_file, file_type):
 
@@ -112,8 +112,8 @@ def youtube_downloader(yt_video_id, output_file, file_type):
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.argument("output_file")
+@click.option("-i", "input_file", required=True, help="Input file")
+@click.option("-o", "output_file", required=True, help="Output file")
 @click.option("--fs", default=44100)
 @click.option("--ffmpeg_bin", default="ffmpeg")
 def process_youtube_audio(input_file, output_file, fs, ffmpeg_bin):

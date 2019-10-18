@@ -1,34 +1,74 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 import logging
+import os
+import sys
+
 from feature_extractors.api import extract
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("extractor")
-parser.add_argument("action", nargs="?")
-parser.add_argument("input", nargs="?")
-parser.add_argument("output", nargs="?")
-parser.add_argument("--gpus", default=None, help="Specify which gpus to use e.g. 1,2,3")
-parser.add_argument("--cpus", default=None, help="Specify which cpus to use e.g. 1,2,3")
-parser.add_argument("--verbose", action="store_true")
+def main(args, rest_args):
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-args, rest_args = parser.parse_known_args()
-
-if args.verbose:
-    logging.basicConfig(level=logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    extract(
+        extractor=args.extractor,
+        rest_args=_fix_mount_paths(rest_args),
+        volumes=_prepare_volumes(rest_args, args.v),
+        gpus=args.gpus,
+        cpus=args.cpus,
+    )
 
 
-extract(
-    extractor=args.extractor,
-    action=args.action,
-    input_=args.input,
-    output=args.output,
-    rest_args=" ".join(rest_args),
-    gpus=args.gpus,
-    cpus=args.cpus,
-)
+def _fix_mount_paths(rest_args: list) -> list:
+    new_args = []
+    for path in rest_args:
+        if path.startswith("@"):
+            actual_path = os.path.abspath(path[1:])
+            if os.path.exists(actual_path):
+                new_args.append("/mnt" + actual_path)
+            elif os.path.exists(os.path.dirname(actual_path)):
+                new_args.append("/mnt" + actual_path)
+            else:
+                raise Exception(
+                    f"'{actual_path}' or '{os.path.dirname(actual_path)}' does not exist"
+                )
+        else:
+            new_args.append(path)
+    return new_args
+
+def _prepare_volumes(rest_args, extra_volumes):
+    volumes = {}
+    for path in rest_args:
+        if path.startswith("@"):
+            if os.path.exists(path[1:]):
+                abs_path = os.path.abspath(path[1:])
+                volumes[abs_path] = "/mnt" + abs_path
+            elif os.path.exists(os.path.dirname(path[1:])):
+                abs_path = os.path.abspath(os.path.dirname(path[1:]))
+                volumes[abs_path] = "/mnt" + abs_path
+
+    for v in extra_volumes:
+        host_path, machine_path = v.split(":")
+        volumes[host_path] = machine_path
+
+    return volumes
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("extractor")
+    parser.add_argument(
+        "--gpus", default=None, help="Specify which gpus to use e.g. 1,2,3"
+    )
+    parser.add_argument(
+        "--cpus", default=None, help="Specify which cpus to use e.g. 1,2,3"
+    )
+    parser.add_argument("-v", action="append")
+    parser.add_argument("--verbose", action="store_true")
+
+    args, rest_args = parser.parse_known_args()
+    main(args, rest_args)
