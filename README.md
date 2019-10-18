@@ -16,22 +16,22 @@ Here is an example usage:
 ```
 from feature_extractors.api import extract
 
-extract(
+def extract(
     extractor="audio",
-    action="extract-mfcc",
-    input_="/path/to/my/file.wav",
-    output="/here/I/want/it/to/go.npy",
-    rest_args="--n_mfcc 80"
+    rest_args ["extract-mfcc", "-i", "/mnt/path/to/my/file.wav", "-o", "/mnt/here/I/want/it/to/go.npy", "--n_mfcc", "80"],
+    volumes={"/path/to/my/file.wav:/mnt/path/to/my/file.wav", "/here/I/want/it/to/":"/mnt/here/I/want/it/to/"}
 )
 ```
 
 ### Command line
 `feature_extractor [extractor]`
 
-Each extractor then in turn takes an `[action]` (e.g. extract-mfcc) `[input]` (typically a file), an `[output]` (a file or directory depending on the extractor) and furhter options. The system builds a docker image for each extractor type and assigns it a tag on the format `feature_extractors_[extractor]`, this might sometimes take a long while. This is only done the first time an etractor is used. 
+Each extractor then in turn takes an `[action]` (e.g. extract-mfcc), some sort of input, an output file or directory and some extra arguments specific to that extractor. The system builds a docker image for each extractor type and assigns it a tag on the format `feature_extractors_[extractor]`, this might sometimes take a long while. This is only done the first time an etractor is used. 
+Using -v flags one can mount directories from the host into the docker container. This is done by passing one or several -v /path/on/host:/path/in/container flags. There is also a quick way of mounting a file which is preceeding the path with a `@`. This will mount for example `/path/to/myfile.csv` under the path `/mnt/path/to/myfile.csv` in the container. It also works with output files/directories that does not exist yet by mounting the parent path instead, i.e. if `/path/to/a/directory` exists and we want to mount an output directory `@/path/to/a/directory/new_directory` it will mount `/path/to/a/directory/` to `/mnt/path/to/a/directory/` in the container.
 
-An example:
-`feature_extractor audio extract-mfcc /path/to/my/file.wav /here/I/want/it/to/go.npy --n_mfcc 80`
+
+An example (using both ways of mounting):
+`feature_extractor audio extract-mfcc -i /path/to/my/file.wav -o @/here/I/want/it/to/go.npy --n_mfcc 80 -v /hostpah/myfile.wav:/path/to/my/file.wav`
 
 It is also possible to just build the extractors normally using docker and run them with `docker run`. The `feature_extractor` is simply doing that automatically.
 
