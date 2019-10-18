@@ -62,6 +62,7 @@ def extract(
         logger.debug("image used: %s", e.image)
         logger.debug("command used: %s", e.command)
         print(e.stderr.decode("utf-8"))
+        exit(1)
 
 
 def _prepare_cpu_and_gpu_options(cpus, gpus):
@@ -104,11 +105,11 @@ def _build_image(extractor, tag, disable_progress_bar):
                     logger.debug(real_line)
                 elif "error" in json_line:
                     logger.error(json_line)
-                    exit()
+                    exit(1)
     except docker.errors.BuildError as e:
         build_log = e.build_log
         print("".join([x["stream"] for x in build_log if "stream" in x]))
-        exit()
+        exit(1)
     finally:
         if pbar:
             pbar.close()
