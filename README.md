@@ -19,7 +19,7 @@ from feature_extractors.api import extract
 def extract(
     extractor="audio",
     command_args=["extract-mfcc", "-i", "/mnt/path/to/my/file.wav", "-o", "/mnt/here/I/want/it/to/go.npy", "--n_mfcc", "80"],
-    volumes={"/path/to/my/file.wav:/mnt/path/to/my/file.wav", "/here/I/want/it/to/":"/mnt/here/I/want/it/to/"}
+    volumes={"/path/to/my/file.wav": "/mnt/path/to/my/file.wav", "/here/I/want/it/to/": "/mnt/here/I/want/it/to/"}
 )
 ```
 
