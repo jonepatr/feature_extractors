@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--cpus", default=None, help="Specify which cpus to use e.g. 1,2,3"
     )
-    parser.add_argument("-v", action="append")
+    parser.add_argument("-v", action="append", default=[])
     parser.add_argument("--verbose", action="store_true")
 
     args, rest_args = parser.parse_known_args()
