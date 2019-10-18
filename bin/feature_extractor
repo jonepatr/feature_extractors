@@ -16,7 +16,7 @@ def main(args, rest_args):
 
     extract(
         extractor=args.extractor,
-        rest_args=_fix_mount_paths(rest_args),
+        command_args=_fix_mount_paths(rest_args),
         volumes=_prepare_volumes(rest_args, args.v),
         gpus=args.gpus,
         cpus=args.cpus,
@@ -39,6 +39,7 @@ def _fix_mount_paths(rest_args: list) -> list:
         else:
             new_args.append(path)
     return new_args
+
 
 def _prepare_volumes(rest_args, extra_volumes):
     volumes = {}

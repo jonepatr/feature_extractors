@@ -4,7 +4,6 @@ import os
 import re
 
 import docker
-
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def extract(
     extractor: str = None,
-    rest_args: list = None,
+    command_args: list = None,
     volumes: dict = None,
     gpus: str = None,
     cpus: str = None,
@@ -23,7 +22,7 @@ def extract(
     logger.debug(
         f"""
         extractor: {extractor}
-        rest_args: {rest_args}
+        command_args: {command_args}
         volumes: {volumes}
         gpus: {gpus}
         cpus: {cpus}
@@ -37,12 +36,11 @@ def extract(
     except docker.errors.ImageNotFound:
         _build_image(extractor, tag, disable_progress_bar)
 
-    args = " ".join(rest_args)
+    args = " ".join(command_args)
 
     command = f"python extract.py {args}"
     logger.debug("command: %s", command)
 
-    
     final_volumes = {}
     if volumes:
         for host_path, machine_path in volumes.items():
