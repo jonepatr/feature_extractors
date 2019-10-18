@@ -57,10 +57,10 @@ def extract_autocorrelation(
 @cli.command()
 @click.option("-i", "input_file", required=True, help="Input file")
 @click.option("-o", "output_file", required=True, help="Output file")
-@click.option("--sampling_rate")
-@click.option("--n_fft", required=True, type=int)
+@click.option("--sampling_rate", type=int)
+@click.option("--n_fft", required=True, type=(int, float))
 @click.option("--n_mels", default=64)
-@click.option("--hop_length", required=True, type=int)
+@click.option("--hop_length", required=True, type=(int, float))
 @click.option("--normalize_audio")
 def extract_spectrogram(
     input_file, output_file, sampling_rate, n_fft, n_mels, hop_length, normalize_audio
