@@ -2,11 +2,8 @@ import zmq
 import backports.tempfile
 import tempfile
 import msgpack
-import click
 import sys
 import traceback
-
-
 
 def _construct_msg(msg, success, files=None):
     out = {"success": success, "msg": msg}
@@ -14,7 +11,7 @@ def _construct_msg(msg, success, files=None):
         out["files"] = files
     return msgpack.dumps(out, use_bin_type=True)
 
-def listen():
+def listen(cli):
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.bind("tcp://*:5555")
