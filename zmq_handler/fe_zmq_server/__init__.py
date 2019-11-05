@@ -11,7 +11,11 @@ def _construct_msg(msg, success, files=None):
     out = {"success": success, "msg": msg}
     if files:
         out["files"] = files
-    return msgpack.dumps(out, use_bin_type=True)
+
+    if sys.version_info[0] < 3:
+        return msgpack.dumps(out, use_bin_type=False, encoding="utf-8")
+    else:
+        return msgpack.dumps(out, use_bin_type=True)
 
 
 def listen(cli, port=5555):
