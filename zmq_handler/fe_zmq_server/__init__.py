@@ -4,6 +4,7 @@ import tempfile
 import msgpack
 import sys
 import traceback
+import click
 
 
 def _construct_msg(msg, success, files=None):
@@ -23,11 +24,11 @@ def listen(cli, port=5555):
         message = socket.recv()
         msg = msgpack.loads(message, raw=False)
 
-        if not msg.get("args"):
+        if "args" not in msg:
             socket.send(_construct_msg("args must be set", False))
             continue
 
-        if not msg.get("command"):
+        if "command" not in msg:
             socket.send(_construct_msg("command must be set", False))
             continue
 
