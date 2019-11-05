@@ -1,3 +1,4 @@
 click
 numpy
 dlib
+git+https://github.com/jonepatr/feature_extractors.git#subdirectory=zmq_handler

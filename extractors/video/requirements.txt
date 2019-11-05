@@ -1,1 +1,2 @@
 click
+git+https://github.com/jonepatr/feature_extractors.git#subdirectory=zmq_handler
