@@ -32,4 +32,3 @@ RUN pip install -r requirements.txt
 # RUN cp extract.py /workspace/RingNet/extract.py
 RUN touch RingNet/__init__.py
 
-WORKDIR /workspace/RingNet
