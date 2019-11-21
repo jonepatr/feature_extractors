@@ -30,4 +30,3 @@ RUN git clone https://github.com/soubhiksanyal/RingNet.git
 COPY . .
 RUN pip install -r requirements.txt
 
-RUN touch RingNet/__init__.py
