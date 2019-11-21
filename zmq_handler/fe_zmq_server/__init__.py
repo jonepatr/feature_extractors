@@ -5,6 +5,14 @@ import msgpack
 import sys
 import traceback
 import click
+import tarfile
+import os
+from uuid import uuid4
+
+try:
+    from cStringIO import StringIO as BIO
+except ImportError:  # python 3
+    from io import BytesIO as BIO
 
 
 def _construct_msg(msg, success, files=None):
@@ -38,20 +46,33 @@ def listen(cli, port=5555):
         with backports.tempfile.TemporaryDirectory() as tmpd:
             for key, value in msg["args"].items():
                 if isinstance(value, dict):
-                    if "_file" in value["type"]:
-                        if not value["extension"].startswith("."):
-                            value["extension"] = "." + value["extension"]
+                    if value.get("extension") and not value["extension"].startswith(
+                        "."
+                    ):
+                        value["extension"] = "." + value["extension"]
+
+                    if value["type"] == "input_file":
                         tmpf = tempfile.NamedTemporaryFile(
                             suffix=value["extension"], dir=tmpd, delete=False
                         )
-                        argument_value = tmpf.name
-
-                    if value["type"] == "input_file":
                         tmpf.write(value["data"])
                         tmpf.close()
+                        argument_value = tmpf.name
+
+                    if "output_" in value["type"]:
+                        base_name = os.path.join(tmpd, str(uuid4()))
+                        name_w_extension = base_name + value.get("extension", "")
 
                     if value["type"] == "output_file":
-                        output_files[key] = tmpf.name
+                        output_files[key] = {"name": name_w_extension, "type": "file"}
+                        argument_value = name_w_extension
+                    elif value["type"] == "output_dir":
+                        output_files[key] = {
+                            "name": base_name,
+                            "tar": name_w_extension,
+                            "type": "dir",
+                        }
+                        argument_value = base_name
                 else:
                     argument_value = value
 
@@ -69,9 +90,20 @@ def listen(cli, port=5555):
                 result = command(arguments, standalone_mode=False)
 
                 files = {}
-                for key, filename in output_files.items():
-                    with open(filename, "rb") as f:
-                        files[key] = f.read()
+                for key, out_file in output_files.items():
+                    if out_file["type"] == "file":
+                        with open(out_file["name"], "rb") as f:
+                            files[key] = f.read()
+                    elif out_file["type"] == "dir":
+                        file_out = BIO()
+                        with tarfile.open(mode="w", fileobj=file_out) as tar:
+                            tar.add(
+                                out_file["name"],
+                                arcname=os.path.basename(out_file["name"]),
+                            )
+                        file_out.seek(0)
+                        files[key] = file_out.read()
+
                 socket.send(_construct_msg(result, True, files=files))
             except click.exceptions.MissingParameter as e:
                 socket.send(_construct_msg(e.format_message(), False))
