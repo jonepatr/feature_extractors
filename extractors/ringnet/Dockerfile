@@ -1,5 +1,5 @@
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
-ENV DEBIAN_FRONTEND=noninteractive 
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
 RUN apt-get install -y python python-pip build-essential autoconf libtool pkg-config python-dev git libboost-all-dev libsm6 libxext6 libxrender-dev python-tk python-opengl python-virtualenv vim ffmpeg
@@ -27,9 +27,7 @@ RUN cd mesh && make && make install
 WORKDIR /workspace
 RUN git clone https://github.com/soubhiksanyal/RingNet.git
 
-ADD . .
+COPY . .
 RUN pip install -r requirements.txt
-# RUN cp extract.py /workspace/RingNet/extract.py
-RUN touch RingNet/__init__.py
 
-WORKDIR /workspace/RingNet
+RUN touch RingNet/__init__.py
